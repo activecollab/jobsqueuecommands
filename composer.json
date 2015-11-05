@@ -1,0 +1,22 @@
+{
+  "name" : "activecollab/jobqueuecommands",
+  "description" : "Active Collab job queue commands",
+  "license" : "proprietary",
+  "require" : {
+    "activecollab/jobsqueue": "~0.1",
+    "activecollab/databaseconnection": "~1.1",
+    "activecollab/configfile" : "~1.0",
+    "symfony/console" : "~2.6",
+    "monolog/monolog" : "~1"
+  },
+  "require-dev" : {
+    "phpunit/phpunit": "~4.7"
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "ActiveCollab\\JobQueue\\": "src",
+      "ActiveCollab\\JobQueue\\Test\\": "test/src"
+    }
+  }
+}
