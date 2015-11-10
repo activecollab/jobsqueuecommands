@@ -31,16 +31,15 @@ class JobsQueue extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $connection = $this->getDatabaseConnection($input);
 
-            $type_rows = $connection->execute('SELECT `type`, COUNT(`id`) AS "queued_jobs_count" FROM `jobs_queue` GROUP BY `type`');
+            $type_rows = $this->getDispatcher($input)->getQueue()->countJobsByType();
 
             if (count($type_rows)) {
                 $table = new Table($output);
                 $table->setHeaders(['Event Type', 'Jobs Count']);
 
-                foreach ($type_rows as $row) {
-                    $table->addRow([$row['type'], $row['queued_jobs_count']]);
+                foreach ($type_rows as $type => $queued_jobs_count) {
+                    $table->addRow([$type, $queued_jobs_count]);
                 }
 
                 $table->render();

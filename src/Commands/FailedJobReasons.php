@@ -33,22 +33,14 @@ class FailedJobReasons extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $connection = $this->getDatabaseConnection($input);
-
-            $event_type_names = $connection->executeFirstColumn('SELECT DISTINCT(`type`) FROM `jobs_queue_failed` WHERE `type` LIKE ?', '%' . $input->getArgument('type') . '%');
-
-            if (count($event_type_names) > 1) {
-                return $this->abort('More than one job type found', 1, $input, $output);
-            } elseif (count($event_type_names) == 0) {
-                return $this->abort('No job type that matches type argument found under failed jobs', 1, $input, $output);
-            }
-
-            $type = $event_type_names[0];
+            $dispatcher = $this->getDispatcher($input);
+            $queue = $dispatcher->getQueue();
+            $type = $dispatcher->unfurlType($input->getArgument('type'));
 
             $output->writeln("Reasons why <comment>'$type'</comment> job failed:");
             $output->writeln('');
 
-            foreach ($connection->execute('SELECT DISTINCT(`reason`) AS "reason" FROM `jobs_queue_failed` WHERE `type` = ?', $type) as $row) {
+            foreach ($queue->getFailedJobReasons($type) as $row) {
                 $output->writeln("    <comment>*</comment> $row[reason]");
             }
 

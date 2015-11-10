@@ -30,8 +30,7 @@ class ClearFailedJobs extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $this->getDatabaseConnection($input)->execute('TRUNCATE TABLE `jobs_queue_failed`');
-
+            $this->getDispatcher($input)->getQueue()->clear();
             return $this->success('Done', $input, $output);
         } catch (Exception $e) {
             return $this->abortDueToException($e, $input, $output);

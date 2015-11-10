@@ -1,11 +1,10 @@
 {
   "name" : "activecollab/jobqueuecommands",
   "description" : "Active Collab job queue commands",
-  "license" : "proprietary",
+  "license" : "MIT",
   "require" : {
     "activecollab/jobsqueue": "~0.1",
     "activecollab/databaseconnection": "~1.1",
-    "activecollab/configfile" : "~1.0",
     "symfony/console" : "~2.6",
     "monolog/monolog" : "~1"
   },

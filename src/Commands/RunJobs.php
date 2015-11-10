@@ -19,9 +19,9 @@ class RunJobs extends Command
     {
         parent::configure();
         $this->setName('run_jobs')
-            ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
-            ->addOption('channels', 'k', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
-            ->setDescription('Run jobs that are next in line for up to N seconds');
+             ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
+             ->addOption('channels', 'k', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
+             ->setDescription('Run jobs that are next in line for up to N seconds');
     }
 
     /**
@@ -32,19 +32,6 @@ class RunJobs extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $log = $this->log($input);
-
-        // ---------------------------------------------------
-        //  Connect to database
-        // ---------------------------------------------------
-
-        $connection = $this->getDatabaseConnection($input);
-
-        // ---------------------------------------------------
-        //  Set up environment, so jobs can read Active Collab
-        //  data without directly querying the database
-        // ---------------------------------------------------
-
-        Environment::setDatabaseConnection($connection);
 
         // ---------------------------------------------------
         //  Prepare dispatcher and success and error logs
@@ -62,82 +49,76 @@ class RunJobs extends Command
             }
         });
 
-        if ($jobs_count = $dispatcher->getQueue()->count()) {
+        // ---------------------------------------------------
+        //  Set max execution time for the jobs in queue
+        // ---------------------------------------------------
 
-            // ---------------------------------------------------
-            //  Set max execution time for the jobs in queue
-            // ---------------------------------------------------
+        $max_execution_time = (integer)$input->getOption('seconds');
 
-            $max_execution_time = (integer)$input->getOption('seconds');
+        $output->writeln("There are " . $dispatcher->getQueue()->count() . " jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
 
-            $output->writeln("There are " . $dispatcher->getQueue()->count() . " jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
+        $work_until = time() + $max_execution_time; // Assume that we spent 1 second bootstrapping the command
+        // ---------------------------------------------------
+        //  Set channels for the jobs in queue
+        // ---------------------------------------------------
+        $channels_string = $input->getOption('channels');
+        $channels = explode(",",$channels_string);
+        if(empty($channels)){
+            $this->abort('Channel argument is expected, pleas try again.',22,$input,$output);//ERROR_BAD_COMMAND
+        }
+        // ---------------------------------------------------
+        //  Enter the execution loop
+        // ---------------------------------------------------
 
-            $work_until = time() + $max_execution_time; // Assume that we spent 1 second bootstrapping the command
-            // ---------------------------------------------------
-            //  Set channels for the jobs in queue
-            // ---------------------------------------------------
-            $channels_string = $input->getOption('channels');
-            $channels = explode(",",$channels_string);
-            if(empty($channels)){
-                $this->abort('Channel argument is expected, pleas try again.',22,$input,$output);//ERROR_BAD_COMMAND
-            }
-            // ---------------------------------------------------
-            //  Enter the execution loop
-            // ---------------------------------------------------
+        do {
+            if ($next_in_line = call_user_func_array([$dispatcher->getQueue(), 'nextInLine'], $channels)) {
+                $log->info('Running job #' . $next_in_line->getQueueId() . ' (' . get_class($next_in_line) . ')');
 
-            do {
-                if ($next_in_line = call_user_func_array(array($dispatcher->getQueue(),'nextInLine'),$channels)) {
-                    $log->info('Running job #' . $next_in_line->getQueueId() . ' (' . get_class($next_in_line) . ')');
+                if ($output->getVerbosity()) {
+                    $output->writeln('<info>OK</info> Running job #' . $next_in_line->getQueueId() . ' for instance #' . $next_in_line->getData()['instance_id'] . ' (' . get_class($next_in_line) . ')');
+                }
+
+                $dispatcher->getQueue()->execute($next_in_line);
+
+                if ($output->getVerbosity()) {
+                    $output->writeln('<info>OK</info> Job #' . $next_in_line->getQueueId() . ' done');
+                }
+
+                $job_id = $next_in_line->getQueueId();
+
+                if (!in_array($job_id, $jobs_ran)) {
+                    $jobs_ran[] = $job_id;
+                }
+            } else {
+                if ($dispatcher->getQueue()->count()) {
+                    $log->info('Next in line not found.');
 
                     if ($output->getVerbosity()) {
-                        $output->writeln('<info>OK</info> Running job #' . $next_in_line->getQueueId() . ' for instance #' . $next_in_line->getData()['instance_id'] . ' (' . get_class($next_in_line) . ')');
-                    }
+                        $sleep_for = mt_rand(900000, 1000000);
 
-                    $dispatcher->getQueue()->execute($next_in_line);
-
-                    if ($output->getVerbosity()) {
-                        $output->writeln('<info>OK</info> Job #' . $next_in_line->getQueueId() . ' done');
-                    }
-
-                    $job_id = $next_in_line->getQueueId();
-
-                    if (!in_array($job_id, $jobs_ran)) {
-                        $jobs_ran[] = $job_id;
+                        $output->writeln("<error>Error</error> Reservation collision. Sleeping for $sleep_for microseconds");
+                        usleep($sleep_for);
                     }
                 } else {
-                    if ($dispatcher->getQueue()->count()) {
-                        $log->info('Reservation collision');
-
-                        if ($output->getVerbosity()) {
-                            $sleep_for = mt_rand(500000, 1000000);
-
-                            $output->writeln("<error>Error</error> Reservation collision. Sleeping for $sleep_for microseconds");
-                            usleep($sleep_for);
-                        }
-                    } else {
-                        break; // No new jobs? Break from the loop. Check is needed because nextInLine() can return NULL in case of job snatching
-                    }
+                    break; // No new jobs? Break from the loop. Check is needed because nextInLine() can return NULL in case of job snatching
                 }
-            } while (time() < $work_until);
+            }
+        } while (time() < $work_until);
 
-            // ---------------------------------------------------
-            //  Print stats
-            // ---------------------------------------------------
+        // ---------------------------------------------------
+        //  Print stats
+        // ---------------------------------------------------
 
-            $execution_stats = [
-                'time_limit' => $max_execution_time,
-                'exec_time' => round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3),
-                'jobs_ran' => count($jobs_ran),
-                'jobs_failed' => count($jobs_failed),
-                'left_in_queue' => $dispatcher->getQueue()->count(),
-            ];
+        $execution_stats = [
+            'time_limit' => $max_execution_time,
+            'exec_time' => round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3),
+            'jobs_ran' => count($jobs_ran),
+            'jobs_failed' => count($jobs_failed),
+            'left_in_queue' => $dispatcher->getQueue()->count(),
+        ];
 
-            $log->info('Execution stats', $execution_stats);
-            $output->writeln('Execution stats: ' . $execution_stats['jobs_ran'] . ' ran, ' . $execution_stats['jobs_failed'] . ' failed. ' . $execution_stats['left_in_queue'] . " left in queue. Executed in " . $execution_stats['exec_time']);
-        } else {
-            $output->writeln('Queue is empty');
-            $log->info('Queue is empty');
-        }
+        $log->info('Execution stats', $execution_stats);
+        $output->writeln('Execution stats: ' . $execution_stats['jobs_ran'] . ' ran, ' . $execution_stats['jobs_failed'] . ' failed. ' . $execution_stats['left_in_queue'] . " left in queue. Executed in " . $execution_stats['exec_time']);
 
         $log->info('Done in ' . (isset($execution_stats) ? $execution_stats['exec_time'] : round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3)) . ' seconds');
     }
