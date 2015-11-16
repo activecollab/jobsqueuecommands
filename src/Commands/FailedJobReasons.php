@@ -35,7 +35,14 @@ class FailedJobReasons extends Command
         try {
             $dispatcher = $this->getDispatcher($input);
             $queue = $dispatcher->getQueue();
-            $type = $dispatcher->unfurlType($input->getArgument('type'));
+            $event_type_names = $dispatcher->unfurlType($input->getArgument('type'));
+
+            if (count($event_type_names) > 1) {
+                throw new Exception('More than one job type found');
+            } elseif (count($event_type_names) == 0) {
+                throw new Exception('No job type that matches type argument found under failed jobs');
+            }
+            $type = $event_type_names[0];
 
             $output->writeln("Reasons why <comment>'$type'</comment> job failed:");
             $output->writeln('');
@@ -43,7 +50,6 @@ class FailedJobReasons extends Command
             foreach ($queue->getFailedJobReasons($type) as $row) {
                 $output->writeln("    <comment>*</comment> $row[reason]");
             }
-
             $output->writeln('');
         } catch (Exception $e) {
             return $this->abortDueToException($e, $input, $output);
