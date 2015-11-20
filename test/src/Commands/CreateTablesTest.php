@@ -28,7 +28,6 @@ class CreateTablesTest extends AbstractCommandTest
         $commandTester->execute([
             'command'                    => $command->getName(),
             '--config-path'              => $this->config_path,
-            '--create_tables_if_missing' => true
         ]);
 
         $this->assertRegExp('/Tables created/', $commandTester->getDisplay());
