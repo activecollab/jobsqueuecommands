@@ -15,12 +15,12 @@ class RunJobs extends Command
     /**
      * Configure command
      */
-    protected function configure()
+    protected function configure ()
     {
         parent::configure();
         $this->setName('run_jobs')
              ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
-             ->addOption('channels', 'k', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
+             ->addOption('channels', '', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
              ->setDescription('Run jobs that are next in line for up to N seconds');
     }
 
@@ -29,7 +29,7 @@ class RunJobs extends Command
      * @param  OutputInterface $output
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute (InputInterface $input, OutputInterface $output)
     {
         $log = $this->log($input);
 
@@ -61,11 +61,8 @@ class RunJobs extends Command
         // ---------------------------------------------------
         //  Set channels for the jobs in queue
         // ---------------------------------------------------
-        $channels_string = $input->getOption('channels');
-        $channels = explode(",",$channels_string);
-        if(empty($channels)){
-            $this->abort('Channel argument is expected, pleas try again.',22,$input,$output);//ERROR_BAD_COMMAND
-        }
+
+        $channels = $this->getChannels($input->getOption('channels'));
         // ---------------------------------------------------
         //  Enter the execution loop
         // ---------------------------------------------------
@@ -121,5 +118,26 @@ class RunJobs extends Command
         $output->writeln('Execution stats: ' . $execution_stats['jobs_ran'] . ' ran, ' . $execution_stats['jobs_failed'] . ' failed. ' . $execution_stats['left_in_queue'] . " left in queue. Executed in " . $execution_stats['exec_time']);
 
         $log->info('Done in ' . (isset($execution_stats) ? $execution_stats['exec_time'] : round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3)) . ' seconds');
+    }
+
+    /**
+     * Convert channels string to channel list
+     * @param $channels
+     * @return array
+     * @throws \Exception
+     */
+    protected function getChannels ($channels)
+    {
+        $channels = trim($channels);
+        if (empty($channels))
+        {
+            throw new \Exception('No channel found.');
+        } elseif ($channels = '*')
+        {
+            return [];
+        } else
+        {
+            return explode(',', $channels);
+        }
     }
 }

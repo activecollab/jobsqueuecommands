@@ -30,8 +30,7 @@ abstract class Command extends SymfonyCommand
     {
         $this->addOption('config-path', 'c', InputOption::VALUE_REQUIRED, 'Path to configuration file',  '/etc/activecollab-jobs.json')
              ->addOption('debug', '', InputOption::VALUE_NONE, 'Output debug details')
-             ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON')
-             ->addOption('create_tables_if_missing', '', InputOption::VALUE_OPTIONAL, 'Creates table on init', false);
+             ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON');
     }
 
     /**
@@ -241,8 +240,7 @@ abstract class Command extends SymfonyCommand
     {
         if ($this->dispatcher === false) {
             $log = $this->log($input);
-            $create_tables_if_missing = (boolean)$input->getOption('create_tables_if_missing');
-            $this->dispatcher = new Dispatcher(new MySqlQueue($this->getDatabaseConnection($input), $create_tables_if_missing));
+            $this->dispatcher = new Dispatcher(new MySqlQueue($this->getDatabaseConnection($input), false));
 
             $this->dispatcher->getQueue()->onJobFailure(function (Job $job, Exception $e) use (&$jobs_failed, &$log) {
                 $log->error('Exception caught while running a job', [
