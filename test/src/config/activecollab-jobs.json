@@ -1,7 +1,0 @@
-{
-  "db_host": "localhost",
-  "db_user": "root",
-  "db_pass": "",
-  "db_name": "activecollab_jobs_queue_commands_test",
-  "logs_path": "/Users/ilija/Projects/Components/JobsQueueCommands/test/src/logs"
-}
