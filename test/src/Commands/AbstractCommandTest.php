@@ -76,8 +76,6 @@ abstract class AbstractCommandTest extends TestCase
      */
     public function tearDown()
     {
-        //$this->connection->execute('DROP TABLE IF EXISTS `' . MySqlQueue::TABLE_NAME . '`');
-        //$this->connection->execute('DROP TABLE IF EXISTS `' . MySqlQueue::TABLE_NAME_FAILED . '`');
         if ($this->link) {
             $this->link->close();
         }

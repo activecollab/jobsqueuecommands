@@ -6,6 +6,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 use ActiveCollab\JobQueue\Command\CreateTables;
 use ActiveCollab\JobsQueue\Queue\MySqlQueue;
 
+/**
+ * @package ActiveCollab\JobQueue\Test\Commands
+ */
 class CreateTablesTest extends AbstractCommandTest
 {
     /**
@@ -13,6 +16,7 @@ class CreateTablesTest extends AbstractCommandTest
      */
     public function setUp(){
         parent::setUp();
+
         $this->command =  new CreateTables();
     }
 
@@ -26,29 +30,34 @@ class CreateTablesTest extends AbstractCommandTest
         $command = $application->find('create_tables');
         $commandTester = new CommandTester($command);
         $commandTester->execute([
-            'command'                    => $command->getName(),
-            '--config-path'              => $this->config_path,
+            'command'       => $command->getName(),
+            '--config-path' => $this->config_path,
         ]);
 
         $this->assertRegExp('/Tables created/', $commandTester->getDisplay());
-        $this->assertDBTableExists(MySqlQueue::TABLE_NAME);
-        $this->assertDBTableExists(MySqlQueue::TABLE_NAME_FAILED);
+        $this->assertDBTableExists(MySqlQueue::JOBS_TABLE_NAME);
+        $this->assertDBTableExists(MySqlQueue::FAILED_JOBS_TABLE_NAME);
         $this->assertDBTableExists('email_log');
     }
 
-    /**
-     * Check if table exists in database
-     * @param $table_name
-     */
-    private function assertDBTableExists($table_name){
-        $this->assertSame('1', $this->connection->executeFirstCell("SELECT count(*) FROM information_schema.tables WHERE table_schema = '" . $this->config_options['db_name'] . "' and table_name ='" . $table_name . "'"));
-    }
     /**
      * Tear down test environment
      */
     public function tearDown()
     {
-        $this->connection->execute('DROP TABLE IF EXISTS `email_log`');
+        if ($this->connection->tableExists('email_log')) {
+            $this->connection->dropTable('email_log');
+        }
+
         parent::tearDown();
+    }
+
+    /**
+     * Check if table exists in database
+     *
+     * @param $table_name
+     */
+    private function assertDBTableExists($table_name){
+        $this->assertSame('1', $this->connection->executeFirstCell("SELECT count(*) FROM information_schema.tables WHERE table_schema = '" . $this->config_options['db_name'] . "' and table_name ='" . $table_name . "'"));
     }
 }
