@@ -31,8 +31,7 @@ class JobsQueue extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-
-            $type_rows = $this->getDispatcher($input)->getQueue()->countJobsByType();
+            $type_rows = $this->dispatcher->getQueue()->countJobsByType();
 
             if (count($type_rows)) {
                 $table = new Table($output);
@@ -44,6 +43,8 @@ class JobsQueue extends Command
 
                 $table->render();
                 $output->writeln('');
+
+                return 0;
             } else {
                 return $this->success('No jobs in the queue', $input, $output);
             }
