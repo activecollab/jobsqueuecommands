@@ -31,7 +31,7 @@ class CreateTables extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $tables = "CREATE TABLE IF NOT EXISTS  `email_log` (
+            $this->dispatcher->getQueue()->createTables("CREATE TABLE IF NOT EXISTS `email_log` (
               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
               `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
               `parent_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -44,8 +44,8 @@ class CreateTables extends Command
               PRIMARY KEY (`id`),
               KEY `message_id` (`message_id`),
               KEY `instance_id` (`instance_id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-            $this->getDispatcher($input)->getQueue()->createTables($tables);
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
             return $this->success('Tables created', $input, $output);
         } catch (Exception $e) {
             return $this->abortDueToException($e, $input, $output);

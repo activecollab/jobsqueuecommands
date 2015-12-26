@@ -1,4 +1,5 @@
 <?php
+
 namespace ActiveCollab\JobQueue\Test\Commands;
 
 use Symfony\Component\Console\Application;
@@ -9,8 +10,13 @@ use ActiveCollab\JobsQueue\Queue\MySqlQueue;
 /**
  * @package ActiveCollab\JobQueue\Test\Commands
  */
-class CreateTablesTest extends AbstractCommandTest
+class CreateTablesTest extends TestCase
 {
+    /**
+     * @var CreateTables
+     */
+    private $command;
+
     /**
      * Set up test environment
      */
@@ -18,6 +24,21 @@ class CreateTablesTest extends AbstractCommandTest
         parent::setUp();
 
         $this->command =  new CreateTables();
+        $this->command->setContainer($this->container);
+    }
+
+    /**
+     * Tear down test environment
+     */
+    public function tearDown()
+    {
+        foreach ([MySqlQueue::BATCHES_TABLE_NAME, MySqlQueue::JOBS_TABLE_NAME, MySqlQueue::FAILED_JOBS_TABLE_NAME] as $table_name) {
+            if ($this->connection->tableExists($table_name)) {
+                $this->connection->dropTable($table_name);
+            }
+        }
+
+        parent::tearDown();
     }
 
     /**
@@ -30,34 +51,14 @@ class CreateTablesTest extends AbstractCommandTest
         $command = $application->find('create_tables');
         $commandTester = new CommandTester($command);
         $commandTester->execute([
-            'command'       => $command->getName(),
-            '--config-path' => $this->config_path,
+            'command' => $command->getName(),
         ]);
 
         $this->assertRegExp('/Tables created/', $commandTester->getDisplay());
-        $this->assertDBTableExists(MySqlQueue::JOBS_TABLE_NAME);
-        $this->assertDBTableExists(MySqlQueue::FAILED_JOBS_TABLE_NAME);
-        $this->assertDBTableExists('email_log');
-    }
 
-    /**
-     * Tear down test environment
-     */
-    public function tearDown()
-    {
-        if ($this->connection->tableExists('email_log')) {
-            $this->connection->dropTable('email_log');
-        }
-
-        parent::tearDown();
-    }
-
-    /**
-     * Check if table exists in database
-     *
-     * @param $table_name
-     */
-    private function assertDBTableExists($table_name){
-        $this->assertSame('1', $this->connection->executeFirstCell("SELECT count(*) FROM information_schema.tables WHERE table_schema = '" . $this->config_options['db_name'] . "' and table_name ='" . $table_name . "'"));
+        $this->assertTrue($this->connection->tableExists(MySqlQueue::BATCHES_TABLE_NAME));
+        $this->assertTrue($this->connection->tableExists(MySqlQueue::JOBS_TABLE_NAME));
+        $this->assertTrue($this->connection->tableExists(MySqlQueue::FAILED_JOBS_TABLE_NAME));
+        $this->assertTrue($this->connection->tableExists('email_log'));
     }
 }
