@@ -112,7 +112,7 @@ class RunJobs extends Command
 
         $execution_stats = [
             'time_limit' => $max_execution_time,
-            'exec_time' => round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3),
+            'exec_time' => round(microtime(true) - JOBS_QUEUE_SCRIPT_TIME, 3),
             'jobs_ran' => count($jobs_ran),
             'jobs_failed' => count($jobs_failed),
             'left_in_queue' => $this->dispatcher->getQueue()->count(),

@@ -7,7 +7,7 @@
 date_default_timezone_set('UTC');
 
 defined('APP_PATH') or define('APP_PATH', dirname(dirname(__DIR__)));
-define('ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME', microtime(true));
+define('JOBS_QUEUE_SCRIPT_TIME', microtime(true));
 
 require APP_PATH . '/vendor/autoload.php';
 
