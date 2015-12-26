@@ -13,7 +13,6 @@ use DateTime;
 use DateTimeZone;
 
 /**
- * @property \ActiveCollab\DatabaseConnection\ConnectionInterface $connection
  * @property \Psr\Log\LoggerInterface $log
  * @property \ActiveCollab\JobsQueue\DispatcherInterface $dispatcher
  *
@@ -28,9 +27,8 @@ abstract class Command extends SymfonyCommand implements ContainerAccessInterfac
      */
     protected function configure()
     {
-        $this->addOption('config-path', 'c', InputOption::VALUE_REQUIRED, 'Path to configuration file',  '/etc/activecollab-jobs.json')
-             ->addOption('debug', '', InputOption::VALUE_NONE, 'Output debug details')
-             ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON');
+        $this->addOption('debug', '', InputOption::VALUE_NONE, 'Output debug details')
+            ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON');
     }
 
     /**

@@ -17,13 +17,13 @@ class RunJobs extends Command
     /**
      * Configure command
      */
-    protected function configure ()
+    protected function configure()
     {
         parent::configure();
 
         $this->setName('run_jobs')
             ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
-            ->addOption('channels', '', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
+            ->addOption('channels', 'c', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process', QueueInterface::MAIN_CHANNEL)
             ->setDescription('Run jobs that are next in line for up to N seconds');
     }
 
