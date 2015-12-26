@@ -1,6 +1,8 @@
 <?php
 namespace ActiveCollab\JobQueue\Command;
 
+use ActiveCollab\ContainerAccess\ContainerAccessInterface;
+use ActiveCollab\ContainerAccess\ContainerAccessInterface\Implementation as ContainerAccessInterfaceImplementation;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,14 +17,19 @@ use Monolog\Formatter\LineFormatter;
 use Exception;
 use DateTime;
 use DateTimeZone;
-use mysqli;
 use RuntimeException;
 
 /**
+ * @property \ActiveCollab\DatabaseConnection\ConnectionInterface $connection
+ * @property \Psr\Log\LoggerInterface $log
+ * @property \ActiveCollab\JobsQueue\DispatcherInterface $dispatcher
+ *
  * @package ActiveCollab\JobQueue\Command
  */
-abstract class Command extends SymfonyCommand
+abstract class Command extends SymfonyCommand implements ContainerAccessInterface
 {
+    use ContainerAccessInterfaceImplementation;
+
     /**
      * Configure command
      */
@@ -179,53 +186,6 @@ abstract class Command extends SymfonyCommand
     // ---------------------------------------------------
 
     /**
-     * @var Connection
-     */
-    private $database_connection = false;
-
-    /**
-     * Return database connection
-     *
-     * @param  InputInterface $input
-     * @return Connection
-     */
-    protected function &getDatabaseConnection(InputInterface $input)
-    {
-        if ($this->database_connection === false) {
-            $mysqli = $this->getDatabaseConnectionFromConfig($this->getConfigOptions($input));
-
-            $this->database_connection = new Connection($mysqli);
-        }
-
-        return $this->database_connection;
-    }
-
-    /**
-     * Use first successful MySQL connection based on the options that we have
-     *
-     * @param  array  $config_options
-     * @return mysqli
-     */
-    private function getDatabaseConnectionFromConfig(array $config_options)
-    {
-        $connection_error_message = '';
-        $connection_error_code = 0;
-
-        foreach (explode(',', $config_options['db_host']) as $host) {
-            $mysqli = new mysqli($host, $config_options['db_user'], $config_options['db_pass'], $config_options['db_name']);
-
-            if ($mysqli->connect_error) {
-                $connection_error_message = $mysqli->connect_error;
-                $connection_error_code = $mysqli->connect_errno;
-            } else {
-                return $mysqli;
-            }
-        }
-
-        throw new RuntimeException("Failed to connect to database. MySQL said: $connection_error_message", $connection_error_code);
-    }
-
-    /**
      * @var Dispatcher
      */
     private $dispatcher = false;
@@ -239,15 +199,14 @@ abstract class Command extends SymfonyCommand
     protected function &getDispatcher(InputInterface $input)
     {
         if ($this->dispatcher === false) {
-            $log = $this->log($input);
-            $this->dispatcher = new Dispatcher(new MySqlQueue($this->getDatabaseConnection($input), false));
+            $this->dispatcher = new Dispatcher(new MySqlQueue($this->connection, false));
 
-            $this->dispatcher->getQueue()->onJobFailure(function (Job $job, Exception $e) use (&$jobs_failed, &$log) {
-                $log->error('Exception caught while running a job', [
-                'job_type' => get_class($job),
-                'job_id' => $job->getQueueId(),
-                'exception' => $e,
-                'thrown_on' => $e->getFile() . ' @ ' . $e->getLine(),
+            $this->dispatcher->getQueue()->onJobFailure(function (Job $job, Exception $e) use (&$jobs_failed) {
+                $this->log->error('Exception caught while running a job', [
+                    'job_type' => get_class($job),
+                    'job_id' => $job->getQueueId(),
+                    'exception' => $e,
+                    'thrown_on' => $e->getFile() . ' @ ' . $e->getLine(),
                 ]);
             });
         }

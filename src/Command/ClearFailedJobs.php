@@ -19,7 +19,7 @@ class ClearFailedJobs extends Command
         parent::configure();
 
         $this->setName('clear_failed_jobs')
-             ->setDescription('Clear all failed jobs');
+            ->setDescription('Clear all failed jobs');
     }
 
     /**
@@ -30,7 +30,7 @@ class ClearFailedJobs extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $this->getDispatcher($input)->getQueue()->clear();
+            $this->dispatcher->getQueue()->clear();
             return $this->success('Done', $input, $output);
         } catch (Exception $e) {
             return $this->abortDueToException($e, $input, $output);

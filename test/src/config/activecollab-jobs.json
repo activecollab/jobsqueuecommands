@@ -3,5 +3,5 @@
   "db_user": "root",
   "db_pass": "",
   "db_name": "activecollab_jobs_queue_commands_test",
-  "logs_path": "/Users/ivanradonjic/Projects/test001/log"
+  "logs_path": "/Users/ilija/Projects/Components/JobsQueueCommands/test/src/logs"
 }
