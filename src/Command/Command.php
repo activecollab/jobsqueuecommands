@@ -28,7 +28,8 @@ abstract class Command extends SymfonyCommand implements ContainerAccessInterfac
     protected function configure()
     {
         $this->addOption('debug', '', InputOption::VALUE_NONE, 'Output debug details')
-            ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON');
+            ->addOption('json', '', InputOption::VALUE_NONE, 'Output JSON')
+            ->addOption('environment', 'e', InputOption::VALUE_REQUIRED, 'Environment in which we are are running (development, staging or production)', 'development');
     }
 
     /**
