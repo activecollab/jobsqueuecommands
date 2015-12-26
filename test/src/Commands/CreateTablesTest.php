@@ -28,20 +28,6 @@ class CreateTablesTest extends TestCase
     }
 
     /**
-     * Tear down test environment
-     */
-    public function tearDown()
-    {
-        foreach ([MySqlQueue::BATCHES_TABLE_NAME, MySqlQueue::JOBS_TABLE_NAME, MySqlQueue::FAILED_JOBS_TABLE_NAME, 'email_log'] as $table_name) {
-            if ($this->connection->tableExists($table_name)) {
-                $this->connection->dropTable($table_name);
-            }
-        }
-
-        parent::tearDown();
-    }
-
-    /**
      * Test if create db script is run correctly
      */
     public function testExecuteRunsOK()

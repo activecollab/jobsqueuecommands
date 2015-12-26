@@ -37,13 +37,13 @@ class FailedJobReasonsTest extends TestCase
         $application->add($this->command);
 
         $command = $application->find('failed_job_reasons');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
             'type'    => 'not-existing-type-on-acctivecollab'
         ]);
 
-        $this->assertRegExp('/No job type that matches type argument found under failed jobs/', $commandTester->getDisplay());
+        $this->assertRegExp('/No job type that matches type argument found under failed jobs/', $command_tester->getDisplay());
     }
 
     /**
@@ -67,12 +67,12 @@ class FailedJobReasonsTest extends TestCase
         $application->add($this->command);
 
         $command = $application->find('failed_job_reasons');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
             'type'    => 'type_one'
         ]);
-        $this->assertContains('Expected test exception.', $commandTester->getDisplay());
+        $this->assertContains('Expected test exception.', $command_tester->getDisplay());
     }
 
     /**
@@ -94,12 +94,13 @@ class FailedJobReasonsTest extends TestCase
 
         $application = new Application();
         $application->add($this->command);
+
         $command = $application->find('failed_job_reasons');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
             'type'    => 'type_one'
         ]);
-        $this->assertContains('More than one job type found', $commandTester->getDisplay());
+        $this->assertContains('More than one job type found', $command_tester->getDisplay());
     }
 }

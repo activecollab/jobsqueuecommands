@@ -110,6 +110,12 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     public function tearDown()
     {
+        foreach ([MySqlQueue::BATCHES_TABLE_NAME, MySqlQueue::JOBS_TABLE_NAME, MySqlQueue::FAILED_JOBS_TABLE_NAME, 'email_log'] as $table_name) {
+            if ($this->connection->tableExists($table_name)) {
+                $this->connection->dropTable($table_name);
+            }
+        }
+
         if ($this->link) {
             $this->link->close();
         }
