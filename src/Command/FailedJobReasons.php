@@ -1,6 +1,6 @@
 <?php
 
-namespace ActiveCollab\JobQueue\Commands;
+namespace ActiveCollab\JobQueue\Command;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,7 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Exception;
 
 /**
- * @package ActiveCollab\JobQueue\Commands
+ * @package ActiveCollab\JobQueue\Command
  */
 class FailedJobReasons extends Command
 {

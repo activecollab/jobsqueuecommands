@@ -5,7 +5,7 @@ namespace ActiveCollab\JobQueue\Test\Commands;
 use ActiveCollab\JobsQueue\Dispatcher;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use ActiveCollab\JobQueue\Commands\FailedJobReasons;
+use ActiveCollab\JobQueue\Command\FailedJobReasons;
 use Exception;
 
 class FailedJobReasonsTest extends AbstractCommandTest

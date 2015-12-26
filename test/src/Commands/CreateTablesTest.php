@@ -3,7 +3,7 @@ namespace ActiveCollab\JobQueue\Test\Commands;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use ActiveCollab\JobQueue\Commands\CreateTables;
+use ActiveCollab\JobQueue\Command\CreateTables;
 use ActiveCollab\JobsQueue\Queue\MySqlQueue;
 
 class CreateTablesTest extends AbstractCommandTest

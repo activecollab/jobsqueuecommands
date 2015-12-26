@@ -4,7 +4,7 @@ namespace ActiveCollab\JobQueue\Test\Commands;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
-use ActiveCollab\JobQueue\Commands\ClearFailedJobs;
+use ActiveCollab\JobQueue\Command\ClearFailedJobs;
 use ActiveCollab\JobsQueue\Dispatcher;
 use Exception;
 

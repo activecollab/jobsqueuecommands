@@ -2,13 +2,11 @@
 
 namespace ActiveCollab\JobQueue\Test\Commands;
 
-use ActiveCollab\JobQueue\Commands\RunJobs;
-use ActiveCollab\JobsQueue\Dispatcher;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Tester\CommandTester;
-use Exception;
+use ActiveCollab\JobQueue\Command\RunJobs;
 
-
+/**
+ * @package ActiveCollab\JobQueue\Test\Commands
+ */
 class RunJobsTest extends AbstractCommandTest
 {
     /**

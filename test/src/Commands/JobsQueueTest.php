@@ -3,7 +3,7 @@
 namespace ActiveCollab\JobQueue\Test\Commands;
 
 
-use ActiveCollab\JobQueue\Commands\JobsQueue;
+use ActiveCollab\JobQueue\Command\JobsQueue;
 use ActiveCollab\JobsQueue\Dispatcher;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;

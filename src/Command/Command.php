@@ -1,5 +1,5 @@
 <?php
-namespace ActiveCollab\JobQueue\Commands;
+namespace ActiveCollab\JobQueue\Command;
 
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ use mysqli;
 use RuntimeException;
 
 /**
- * @package ActiveCollab\JobQueue\Commands
+ * @package ActiveCollab\JobQueue\Command
  */
 abstract class Command extends SymfonyCommand
 {

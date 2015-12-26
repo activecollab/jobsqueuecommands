@@ -1,6 +1,6 @@
 <?php
 
-namespace ActiveCollab\JobQueue\Commands;
+namespace ActiveCollab\JobQueue\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -10,7 +10,7 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * @package ActiveCollab\JobQueue\Commands
+ * @package ActiveCollab\JobQueue\Command
  */
 class RestoreFailedJobs extends Command
 {

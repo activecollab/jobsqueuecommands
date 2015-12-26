@@ -1,6 +1,6 @@
 <?php
 
-namespace ActiveCollab\JobQueue\Commands;
+namespace ActiveCollab\JobQueue\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use ActiveCollab\JobsQueue\Jobs\Job;
 use ActiveCollab\JobsQueue\Queue\QueueInterface;
 /**
- * @package ActiveCollab\JobQueue\Commands
+ * @package ActiveCollab\JobQueue\Command
  */
 class RunJobs extends Command
 {

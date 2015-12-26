@@ -2,8 +2,9 @@
 namespace ActiveCollab\JobQueue\Test\Commands;
 
 use ActiveCollab\DatabaseConnection\Connection;
-use ActiveCollab\JobQueue\Commands\Command;
+use ActiveCollab\JobQueue\Command\Command;
 use ActiveCollab\JobsQueue\Queue\MySqlQueue;
+
 /**
  * @package ActiveCollab\JobQueue\Test\Commands
  */
