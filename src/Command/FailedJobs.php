@@ -13,25 +13,23 @@ use Exception;
 class FailedJobs extends Command
 {
     /**
-     * Configure command
+     * {@inheritdoc}
      */
     protected function configure()
     {
         parent::configure();
 
         $this->setName('failed_jobs')
-             ->setDescription('List failed jobs grouped by type and date');
+            ->setDescription('List failed jobs grouped by type and date');
     }
 
     /**
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
-     * @return int
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $event_types = $this->getDispatcher($input)->getQueue()->failedJobStatistics();
+            $event_types = $this->dispatcher->getQueue()->failedJobStatistics();
 
             if (count($event_types)) {
                 foreach ($event_types as $event_type => $failed_jobs) {
@@ -48,6 +46,8 @@ class FailedJobs extends Command
 
                     $output->writeln('');
                 }
+
+                return 0;
             } else {
                 return $this->success('No failed jobs found', $input, $output);
             }
