@@ -4,6 +4,7 @@ namespace ActiveCollab\JobQueue\Test\Commands;
 use ActiveCollab\DatabaseConnection\Connection;
 use ActiveCollab\JobQueue\Command\Command;
 use ActiveCollab\JobsQueue\Queue\MySqlQueue;
+use mysqli;
 
 /**
  * @package ActiveCollab\JobQueue\Test\Commands
@@ -77,7 +78,10 @@ abstract class AbstractCommandTest extends TestCase
     {
         //$this->connection->execute('DROP TABLE IF EXISTS `' . MySqlQueue::TABLE_NAME . '`');
         //$this->connection->execute('DROP TABLE IF EXISTS `' . MySqlQueue::TABLE_NAME_FAILED . '`');
-        $this->link->close();
+        if ($this->link) {
+            $this->link->close();
+        }
+
 
         //$this->last_failed_job = $this->last_failure_message = null;
 
@@ -91,7 +95,7 @@ abstract class AbstractCommandTest extends TestCase
      */
     protected function assertRecordsCount($expected)
     {
-        $this->assertSame($expected, $this->connection->executeFirstCell('SELECT COUNT(`id`) AS "row_count" FROM `' . MySqlQueue::TABLE_NAME . '`'));
+        $this->assertSame($expected, $this->connection->executeFirstCell('SELECT COUNT(`id`) AS "row_count" FROM `' . MySqlQueue::JOBS_TABLE_NAME . '`'));
     }
 
     /**
@@ -101,6 +105,6 @@ abstract class AbstractCommandTest extends TestCase
      */
     protected function assertFailedRecordsCount($expected)
     {
-        $this->assertSame($expected, $this->connection->executeFirstCell('SELECT COUNT(`id`) AS "row_count" FROM `' . MySqlQueue::TABLE_NAME_FAILED . '`'));
+        $this->assertSame($expected, $this->connection->executeFirstCell('SELECT COUNT(`id`) AS "row_count" FROM `' . MySqlQueue::FAILED_JOBS_TABLE_NAME. '`'));
     }
 }

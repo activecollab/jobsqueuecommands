@@ -1,1 +1,7 @@
-{"db_host":"Ivans-MacBook-Pro.local","db_user":"root","db_pass":"","db_name":"activecollab_test","logs_path":"/Users/ivanradonjic/Projects/test001/log"}
+{
+  "db_host": "localhost",
+  "db_user": "root",
+  "db_pass": "",
+  "db_name": "activecollab_jobs_queue_commands_test",
+  "logs_path": "/Users/ivanradonjic/Projects/test001/log"
+}
