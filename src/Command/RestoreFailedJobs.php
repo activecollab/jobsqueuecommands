@@ -45,7 +45,7 @@ class RestoreFailedJobs extends Command
                 if (!$by_ids && !$by_type) {
                     throw new InvalidArgumentException('By ID-s or by type option expected');
                 } else {
-                    $queue = $this->getDispatcher($input)->getQueue();
+                    $queue = $this->dispatcher->getQueue();
                     $update_data = $this->getUpdateData($input);
 
                     if ($by_ids) {

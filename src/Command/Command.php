@@ -8,16 +8,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use ActiveCollab\DatabaseConnection\Connection;
-use ActiveCollab\JobsQueue\Dispatcher;
-use ActiveCollab\JobsQueue\Queue\MySqlQueue;
-use ActiveCollab\JobsQueue\Jobs\Job;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Formatter\LineFormatter;
 use Exception;
 use DateTime;
 use DateTimeZone;
-use RuntimeException;
 
 /**
  * @property \ActiveCollab\DatabaseConnection\ConnectionInterface $connection
@@ -179,114 +172,5 @@ abstract class Command extends SymfonyCommand implements ContainerAccessInterfac
         }
 
         return new DateTime($value, new DateTimeZone('GMT'));
-    }
-
-    // ---------------------------------------------------
-    //  Utility methods
-    // ---------------------------------------------------
-
-    /**
-     * @var Dispatcher
-     */
-    private $dispatcher = false;
-
-    /**
-     * Return job dispatcher instance
-     *
-     * @param  InputInterface $input
-     * @return Dispatcher
-     */
-    protected function &getDispatcher(InputInterface $input)
-    {
-        if ($this->dispatcher === false) {
-            $this->dispatcher = new Dispatcher(new MySqlQueue($this->connection, false));
-
-            $this->dispatcher->getQueue()->onJobFailure(function (Job $job, Exception $e) use (&$jobs_failed) {
-                $this->log->error('Exception caught while running a job', [
-                    'job_type' => get_class($job),
-                    'job_id' => $job->getQueueId(),
-                    'exception' => $e,
-                    'thrown_on' => $e->getFile() . ' @ ' . $e->getLine(),
-                ]);
-            });
-        }
-
-        return $this->dispatcher;
-    }
-
-    /**
-     * @var array
-     */
-    private $config_options = false;
-
-    /**
-     * Read and return configuration options
-     *
-     * @param  InputInterface $input
-     * @return array
-     */
-    protected function &getConfigOptions(InputInterface $input)
-    {
-        if ($this->config_options === false) {
-            $config_path = $input->getOption('config-path');
-
-            if (is_file($config_path)) {
-                $this->config_options = json_decode(file_get_contents($config_path), true);
-            } else {
-                throw new \InvalidArgumentException("Config file not found at '$config_path'");
-            }
-        }
-
-        return $this->config_options;
-    }
-
-    /**
-     * Return value of a particular configuration option
-     *
-     * @param  string         $name
-     * @param  InputInterface $input
-     * @return mixed
-     */
-    protected function getConfigOption($name, InputInterface $input)
-    {
-        if ($this->config_options === false) {
-            $this->getConfigOptions($input);
-        }
-
-        return array_key_exists($name, $this->config_options) ? $this->config_options[$name] : null;
-    }
-
-    /**
-     * @var Logger
-     */
-    private $log;
-
-    /**
-     * @param  InputInterface $input
-     * @return Logger
-     */
-    protected function &log(InputInterface $input)
-    {
-        if (empty($this->log)) {
-            $this->log = new Logger('cli');
-
-            $logs_path = $this->getConfigOption('logs_path', $input);
-
-            if (!is_dir($logs_path)) {
-                throw new RuntimeException("Failed to find logs path: '$logs_path'");
-            }
-
-            $handler = new StreamHandler($logs_path . '/' . date('Y-m-d\HH') . '.txt',
-            ($input->getOption('debug') ? Logger::DEBUG : Logger::WARNING));
-
-            $formatter = new LineFormatter();
-            $formatter->includeStacktraces(true);
-
-            $handler->setFormatter($formatter);
-
-            $this->log->pushHandler($handler);
-        }
-
-        return $this->log;
     }
 }

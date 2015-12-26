@@ -19,7 +19,7 @@ class RunQueueMaintenance extends Command
         parent::configure();
 
         $this->setName('run_queue_maintenance')
-             ->setDescription('Execute queue maintenance tasks');
+            ->setDescription('Execute queue maintenance tasks');
     }
 
     /**
@@ -30,7 +30,7 @@ class RunQueueMaintenance extends Command
     protected function execute (InputInterface $input, OutputInterface $output)
     {
         try {
-            $queue = $this->getDispatcher($input)->getQueue();
+            $queue = $this->dispatcher->getQueue();
 
             $queue->checkStuckJobs();
             $queue->cleanUp();

@@ -2,11 +2,13 @@
 
 namespace ActiveCollab\JobQueue\Command;
 
+use ActiveCollab\JobsQueue\Jobs\Job;
+use ActiveCollab\JobsQueue\Queue\QueueInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use ActiveCollab\JobsQueue\Jobs\Job;
-use ActiveCollab\JobsQueue\Queue\QueueInterface;
+use InvalidArgumentException;
+
 /**
  * @package ActiveCollab\JobQueue\Command
  */
@@ -18,10 +20,11 @@ class RunJobs extends Command
     protected function configure ()
     {
         parent::configure();
+
         $this->setName('run_jobs')
-             ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
-             ->addOption('channels', '', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
-             ->setDescription('Run jobs that are next in line for up to N seconds');
+            ->addOption('seconds', 's', InputOption::VALUE_REQUIRED, 'Run jobs for -s seconds before quitting the process', 50)
+            ->addOption('channels', '', InputOption::VALUE_REQUIRED, 'Select one or more channels for jobs for process',QueueInterface::MAIN_CHANNEL)
+            ->setDescription('Run jobs that are next in line for up to N seconds');
     }
 
     /**
@@ -35,11 +38,9 @@ class RunJobs extends Command
         //  Prepare dispatcher and success and error logs
         // ---------------------------------------------------
 
-        $dispatcher = $this->getDispatcher($input);
-
         $jobs_ran = $jobs_failed = [];
 
-        $dispatcher->getQueue()->onJobFailure(function (Job $job) use (&$jobs_failed) {
+        $this->dispatcher->getQueue()->onJobFailure(function (Job $job) use (&$jobs_failed) {
             $job_id = $job->getQueueId();
 
             if (!in_array($job_id, $jobs_failed)) {
@@ -53,20 +54,22 @@ class RunJobs extends Command
 
         $max_execution_time = (integer)$input->getOption('seconds');
 
-        $output->writeln("There are " . $dispatcher->getQueue()->count() . " jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
+        $output->writeln("There are " . $this->dispatcher->getQueue()->count() . " jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
 
         $work_until = time() + $max_execution_time; // Assume that we spent 1 second bootstrapping the command
+
         // ---------------------------------------------------
         //  Set channels for the jobs in queue
         // ---------------------------------------------------
 
         $channels = $this->getChannels($input->getOption('channels'));
+
         // ---------------------------------------------------
         //  Enter the execution loop
         // ---------------------------------------------------
 
         do {
-            if ($next_in_line = call_user_func_array([$dispatcher->getQueue(), 'nextInLine'], $channels)) {
+            if ($next_in_line = call_user_func_array([$this->dispatcher->getQueue(), 'nextInLine'], $channels)) {
                 $this->log->debug('Running job #' . $next_in_line->getQueueId() . ' (' . get_class($next_in_line) . ')', [
                     'job_type' => get_class($next_in_line),
                     'job_id' => $next_in_line->getQueueId(),
@@ -76,7 +79,7 @@ class RunJobs extends Command
                     $output->writeln('<info>OK</info> Running job #' . $next_in_line->getQueueId() . ' for instance #' . $next_in_line->getData()['instance_id'] . ' (' . get_class($next_in_line) . ')');
                 }
 
-                $dispatcher->getQueue()->execute($next_in_line);
+                $this->dispatcher->getQueue()->execute($next_in_line);
 
                 if ($output->getVerbosity()) {
                     $output->writeln('<info>OK</info> Job #' . $next_in_line->getQueueId() . ' done');
@@ -88,7 +91,7 @@ class RunJobs extends Command
                     $jobs_ran[] = $job_id;
                 }
             } else {
-                if ($dispatcher->getQueue()->count()) {
+                if ($this->dispatcher->getQueue()->count()) {
                     $this->log->debug('Next in line not found.');
 
                     if ($output->getVerbosity()) {
@@ -112,7 +115,7 @@ class RunJobs extends Command
             'exec_time' => round(microtime(true) - ACTIVECOLLAB_JOBS_CONSUMER_SCRIPT_TIME, 3),
             'jobs_ran' => count($jobs_ran),
             'jobs_failed' => count($jobs_failed),
-            'left_in_queue' => $dispatcher->getQueue()->count(),
+            'left_in_queue' => $this->dispatcher->getQueue()->count(),
         ];
 
         $this->log->debug('Jubs ran in ' . $execution_stats['exec_time']  . 's', $execution_stats);
@@ -121,21 +124,19 @@ class RunJobs extends Command
 
     /**
      * Convert channels string to channel list
-     * @param $channels
+     *
+     * @param  string $channels
      * @return array
-     * @throws \Exception
      */
-    protected function getChannels ($channels)
+    protected function getChannels($channels)
     {
         $channels = trim($channels);
-        if (empty($channels))
-        {
-            throw new \Exception('No channel found.');
-        } elseif ($channels = '*')
-        {
+
+        if (empty($channels)) {
+            throw new InvalidArgumentException('No channel found.');
+        } elseif ($channels = '*')  {
             return [];
-        } else
-        {
+        } else {
             return explode(',', $channels);
         }
     }
