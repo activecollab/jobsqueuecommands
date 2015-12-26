@@ -1,14 +1,14 @@
 {
-  "name" : "activecollab/jobqueuecommands",
+  "name" : "activecollab/jobsqueuecommands",
   "description" : "Active Collab job queue commands",
   "license" : "MIT",
   "require" : {
-    "activecollab/jobsqueue": "~0.1",
+    "activecollab/jobsqueue": "dev-next",
     "symfony/console" : "~2.6",
-    "monolog/monolog" : "~1"
+    "monolog/monolog" : "~1.0"
   },
   "require-dev" : {
-    "phpunit/phpunit": "~4.7"
+    "phpunit/phpunit": "~5.0"
   },
   "minimum-stability": "dev",
   "autoload": {
