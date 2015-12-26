@@ -19,7 +19,7 @@ class CreateTables extends Command
         parent::configure();
 
         $this->setName('create_tables')
-             ->setDescription('Create tables that are needed for MySQL queue to work');
+            ->setDescription('Create tables that are needed for MySQL queue to work');
     }
 
     /**
@@ -45,7 +45,7 @@ class CreateTables extends Command
               KEY `instance_id` (`instance_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-            return $this->success('Tables created', $input, $output);
+            return $this->success('Done', $input, $output);
         } catch (Exception $e) {
             return $this->abortDueToException($e, $input, $output);
         }

@@ -32,7 +32,7 @@ class CreateTablesTest extends TestCase
      */
     public function tearDown()
     {
-        foreach ([MySqlQueue::BATCHES_TABLE_NAME, MySqlQueue::JOBS_TABLE_NAME, MySqlQueue::FAILED_JOBS_TABLE_NAME] as $table_name) {
+        foreach ([MySqlQueue::BATCHES_TABLE_NAME, MySqlQueue::JOBS_TABLE_NAME, MySqlQueue::FAILED_JOBS_TABLE_NAME, 'email_log'] as $table_name) {
             if ($this->connection->tableExists($table_name)) {
                 $this->connection->dropTable($table_name);
             }
@@ -44,7 +44,8 @@ class CreateTablesTest extends TestCase
     /**
      * Test if create db script is run correctly
      */
-    public function testExecuteRunsOK(){
+    public function testExecuteRunsOK()
+    {
         $application = new Application();
         $application->add($this->command);
 
@@ -54,7 +55,7 @@ class CreateTablesTest extends TestCase
             'command' => $command->getName(),
         ]);
 
-        $this->assertRegExp('/Tables created/', $commandTester->getDisplay());
+        $this->assertContains('Done', $commandTester->getDisplay());
 
         $this->assertTrue($this->connection->tableExists(MySqlQueue::BATCHES_TABLE_NAME));
         $this->assertTrue($this->connection->tableExists(MySqlQueue::JOBS_TABLE_NAME));
