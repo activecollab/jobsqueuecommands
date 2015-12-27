@@ -36,12 +36,12 @@ class CreateTablesTest extends TestCase
         $application->add($this->command);
 
         $command = $application->find('create_tables');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
         ]);
 
-        $this->assertContains('Done', $commandTester->getDisplay());
+        $this->assertContains('Done', $command_tester->getDisplay());
 
         $this->assertTrue($this->connection->tableExists(MySqlQueue::BATCHES_TABLE_NAME));
         $this->assertTrue($this->connection->tableExists(MySqlQueue::JOBS_TABLE_NAME));

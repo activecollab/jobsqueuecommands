@@ -37,12 +37,12 @@ class ClearFailedJobsTest extends TestCase
         $application->add($this->command);
 
         $command = $application->find('clear_failed_jobs');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
         ]);
 
-        $this->assertRegExp('/Done/', $commandTester->getDisplay());
+        $this->assertRegExp('/Done/', $command_tester->getDisplay());
         $this->assertFailedRecordsCount(0);
     }
 
@@ -69,11 +69,11 @@ class ClearFailedJobsTest extends TestCase
         $application->add($this->command);
 
         $command = $application->find('clear_failed_jobs');
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([
+        $command_tester = new CommandTester($command);
+        $command_tester->execute([
             'command' => $command->getName(),
         ]);
 
-        $this->assertContains('Expected test exception.', $commandTester->getDisplay());
+        $this->assertContains('Expected test exception.', $command_tester->getDisplay());
     }
 }
