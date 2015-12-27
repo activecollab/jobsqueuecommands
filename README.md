@@ -4,6 +4,7 @@ This package contains a couple of useful CLI commands that make work with `activ
 
 * `clear_failed_jobs` - Clear failed jobs losts
 * `create_tables` - Create job queue tables (in case you are using MySQL queue)
+* `enqueue` -> Add job to the queue
 * `failed_job_reasons` - Find job by type, and return all distinct reasons why it failed in the past
 * `failed_jobs` - List content of failed jobs log
 * `restore_failed_jobs` - Restore failed jobs by type
