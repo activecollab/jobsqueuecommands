@@ -52,11 +52,11 @@ class RunJobs extends Command
         //  Set max execution time for the jobs in queue
         // ---------------------------------------------------
 
-        $max_execution_time = (integer)$input->getOption('seconds');
+        $max_execution_time = (integer) $input->getOption('seconds');
 
-        $output->writeln("There are " . $this->dispatcher->getQueue()->count() . " jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
+        $output->writeln("There are {$this->dispatcher->getQueue()->count()} jobs in the queue. Preparing to work for {$max_execution_time} seconds.");
 
-        $work_until = time() + $max_execution_time; // Assume that we spent 1 second bootstrapping the command
+        $work_until = time() + $max_execution_time;
 
         // ---------------------------------------------------
         //  Set channels for the jobs in queue
@@ -69,20 +69,20 @@ class RunJobs extends Command
         // ---------------------------------------------------
 
         do {
-            if ($next_in_line = call_user_func_array([$this->dispatcher->getQueue(), 'nextInLine'], $channels)) {
+            if ($next_in_line = $this->dispatcher->getQueue()->nextInLine(...$channels)) {
                 $this->log->debug('Running job #' . $next_in_line->getQueueId() . ' (' . get_class($next_in_line) . ')', [
                     'job_type' => get_class($next_in_line),
                     'job_id' => $next_in_line->getQueueId(),
                 ]);
 
                 if ($output->getVerbosity()) {
-                    $output->writeln('<info>OK</info> Running job #' . $next_in_line->getQueueId() . ' for instance #' . $next_in_line->getData()['instance_id'] . ' (' . get_class($next_in_line) . ')');
+                    $output->writeln("<info>OK</info> Running job #{$next_in_line->getQueueId()} (" . get_class($next_in_line) . ")");
                 }
 
                 $this->dispatcher->getQueue()->execute($next_in_line);
 
                 if ($output->getVerbosity()) {
-                    $output->writeln('<info>OK</info> Job #' . $next_in_line->getQueueId() . ' done');
+                    $output->writeln("<info>OK</info> Job #{$next_in_line->getQueueId()} done");
                 }
 
                 $job_id = $next_in_line->getQueueId();
@@ -97,7 +97,9 @@ class RunJobs extends Command
                     if ($output->getVerbosity()) {
                         $sleep_for = mt_rand(900000, 1000000);
 
-                        $output->writeln("<error>Error</error> Reservation collision. Sleeping for $sleep_for microseconds");
+                        $this->log->notice("Nothing to do at the moment, or job reservation collision. Sleeping for {$sleep_for} microseconds");
+
+                        $output->writeln("<comment>Notice</comment> Nothing to do at the moment, or job reservation collision. Sleeping for {$sleep_for} microseconds");
                         usleep($sleep_for);
                     }
                 } else {
@@ -118,7 +120,7 @@ class RunJobs extends Command
             'left_in_queue' => $this->dispatcher->getQueue()->count(),
         ];
 
-        $this->log->debug('Jubs ran in ' . $execution_stats['exec_time']  . 's', $execution_stats);
+        $this->log->info($execution_stats['jobs_ran'] . ' jobs ran in ' . $execution_stats['exec_time']  . 's', $execution_stats);
         $output->writeln('Execution stats: ' . $execution_stats['jobs_ran'] . ' ran, ' . $execution_stats['jobs_failed'] . ' failed. ' . $execution_stats['left_in_queue'] . " left in queue. Executed in " . $execution_stats['exec_time']);
     }
 
