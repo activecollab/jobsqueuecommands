@@ -79,6 +79,10 @@ class RunJobs extends Command
                     $output->writeln("<info>OK</info> Running job #{$next_in_line->getQueueId()} (" . get_class($next_in_line) . ")");
                 }
 
+                if (method_exists($next_in_line, 'setContainer')) {
+                    $next_in_line->setContainer($this->getContainer());
+                }
+
                 $this->dispatcher->getQueue()->execute($next_in_line);
 
                 if ($output->getVerbosity()) {
